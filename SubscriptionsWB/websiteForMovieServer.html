@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body onload=getAll()>
+    <h1>Server movies</h1>
+    <p>
+        For pratice I will take movies data from <br/>
+        <a href="https://api.tvmaze.com/shows"> https://api.tvmaze.com/shows</a>
+
+    </p>
+    <button onclick=getFromMaze()>Take the data from them and put in the server</button>
+    <br/>
+    Feth from out DB 
+    <br/>
+    <button onclick=getAll()>check in the console out db</button>
+    <br/>
+    <textarea id="output1" style="width: 55%; height: 200px;"></textarea>
+    <h1>Now the user (workers)</h1>
+    <br/>
+    <button onclick=getFromJson() >Take the data from json placeholder and put in the server</button>
+    Feth from out DB 
+    <br/>
+    <button >check in the console out db</button>
+    <br/>
+    <textarea id="output2" style="width: 55%; height: 200px;"></textarea>
+    <script>
+
+
+        const getFromJson = async()=>{
+            const URL = "https://jsonplaceholder.typicode.com/users";
+            const response = await fetch(URL);
+            const data = await response.json();
+            console.table(data)
+            ////
+            await Promise.all(data.map(async (user) => {
+      
+               
+                let newUser = {
+                    name:user.name,
+                    email:user.email,
+                    city:user.address.city,
+                  
+
+                }
+                console.log(newUser)
+                const res = await fetch("http://localhost:8000/members",{
+                method:"POST",
+                headers: {"Content-type": "application/json"},
+                body: JSON.stringify(newUser)
+                        } );
+                
+           
+            
+            })); 
+            await getAll()
+
+        }
+
+        const getFromMaze = async()=>{
+            console.log("fething")
+            const response = await fetch("https://api.tvmaze.com/shows"); // mid data
+            const data = await response.json();
+            console.table(data)
+            
+            let i=0;
+
+            await Promise.all(data.map(async (movie) => {
+      
+               
+                let newMovie = {
+                    name:movie.name,
+                    genres:movie.genres,
+                    image:movie.image.medium,
+                    premiered:movie.premiered,
+
+                }
+                console.log(newMovie)
+                const res = await fetch("http://localhost:8000/movies",{
+                method:"POST",
+                headers: {"Content-type": "application/json"},
+                body: JSON.stringify(newMovie)
+                        } );
+               
+                const resData = await response.json();
+           
+            })); 
+            await getAll()
+   
+
+        }
+
+
+
+        const getAll = async()=>{
+            document.getElementById("output1").innerHTML=""
+            console.log("g")
+        /// called Deleted rows first. In case that the user want to menualy reload the table by the button
+        
+        const response = await fetch("http://localhost:8000/movies"); // mid data
+        console.log("g2")
+        const data = await response.json();
+        
+        console.log(data)
+        console.table(data)
+        data.forEach(movie => {
+            document.getElementById("output1").innerHTML+=movie.name+"\n"
+        });
+        document.getElementById("output1").innerHTML+="\nNow the users\n"
+        
+        const res = await fetch("http://localhost:8000/members"); // mid data
+        console.log("g2")
+        const dataUsers = await res.json();      
+        dataUsers.forEach(user => {
+            document.getElementById("output1").innerHTML+=user.name+"\n"
+        }); 
+    }
+    </script>
+</body>
+</html>
+
+
+    
+
+
+
